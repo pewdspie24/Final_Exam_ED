@@ -1,0 +1,13 @@
+USE pttk_final;
+INSERT INTO account (username, password) VALUES ('admin', 'jZae727K08KaOmKSgOaGzww/XVqGr/PKEgIMkjrcbJI=');
+INSERT INTO fullname (firstname, lastname) VALUES ('Quang', 'Tran');
+INSERT INTO phone (phonenum, type) VALUES ('0327170059', 'mobile');
+INSERT INTO birth (day, month, years) VALUES ('24', '08', '2000');
+INSERT INTO address (city, district, houseno) VALUES ('HN', 'TT', '02');
+INSERT INTO user (accountID, fullnameID, phoneID, birthID, addressID, gender) VALUES (1, 1, 1, 1, 1, 'male');
+INSERT INTO customer (userID, accountNum, IDUn, IP, IDVeri, MemberID) VALUES (1, '1234567', NULL, NULL, 1, 1);
+INSERT INTO area (square, location) VALUES (100.8, 'HN');
+INSERT INTO branch (name, numworkers, location) VALUES ('CS1', 20, 'MB');
+INSERT INTO timesheet (date, status) VALUES ('9', '1');
+INSERT INTO salarygrade (name, multiplier) VALUES ('CEO', 10.2);
+INSERT INTO employee (areaID, userID, branchID, timesheetID, salarygradeID, salaries, starteddate, IDCEO, Profession) VALUES (1, 1, 1, 1, 1, 2000.0, '1/1/2020', 1, 'GS');
