@@ -10,6 +10,7 @@ import java.util.List;
 
 import controller.userDAO.UserDAOImp;
 import model.book.Author;
+import model.book.LightNovel;
 import model.book.Publisher;
 import model.customer.Customer;
 import model.customer.SearchHistory;
@@ -53,6 +54,7 @@ public class CustomerDAOImp implements CustomerDAO {
 	private static final String SELECT_ARE_BY_ID = "select * from area where id =?";
 	private static final String SELECT_TMS_BY_ID = "select * from timesheet where id =?";
 	private static final String SELECT_GRD_BY_ID = "select * from salarygrade where id =?";
+	private static final String SELECT_ALL_CUS = "SELECT * from customer;";
 	
 	protected Connection getConnection() {
         Connection connection = null;
@@ -393,6 +395,32 @@ public class CustomerDAOImp implements CustomerDAO {
             e.printStackTrace();
         }
         return customer;
+	}
+	
+	public List<Customer> findAllCustomers() {
+		List<Customer> cus = new ArrayList<>();
+		// Step 1: Establishing a Connection
+		try (Connection connection = getConnection();
+
+				// Step 2:Create a statement using connection object
+				PreparedStatement preparedStatement = connection.prepareStatement(SELECT_ALL_CUS);) {
+			System.out.println(preparedStatement);
+			// Step 3: Execute the query or update query
+			ResultSet rs = preparedStatement.executeQuery();
+
+			// Step 4: Process the ResultSet object.
+			while (rs.next()) {
+				int ID = rs.getInt("ID");
+				int userID = rs.getInt("userID");
+            	User user = getUser(userID);
+                String accountNum = rs.getString("accountNum");
+                Customer customer = new Customer(ID, accountNum, user);
+				cus.add(customer);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return cus;
 	}
 	
 	public Customer getCustomerByAccountID(int accountID){

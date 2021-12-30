@@ -43,7 +43,7 @@ style="position: absolute; top: 1rem; right: 1rem; z-index:100; background-color
                 <nav>
                     <ul id="MenuItems">
                         <li><a href="home">Home</a></li>
-                        <li><a href="products.html">Products</a></li>
+                        <li><a href="admin">Admin Site</a></li>
                         <li><a href="">About</a></li>
                         <li><a href="">Contact</a></li>
                         <c:if test="${customerID}">

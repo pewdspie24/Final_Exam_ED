@@ -176,6 +176,8 @@ public class userController extends HttpServlet {
 					break;
 				case "/manage":
 					listBooksEmployee(request, response);
+				case "/admin":
+					adminPage(request, response);
 				default:
 					listBooks(request, response);
 					break;
@@ -575,7 +577,7 @@ public class userController extends HttpServlet {
 			throws ServletException, IOException{
 		boolean requireLogin = true;
 		int customerID = getcustomerID(request);
-		if (requireLogin && customerID == 1) {
+		if (requireLogin && customerID != 1) {
 			response.sendRedirect("account.html");
 			return;
 		}
@@ -586,7 +588,7 @@ public class userController extends HttpServlet {
 			throws ServletException, IOException{
 		boolean requireLogin = true;
 		int customerID = getcustomerID(request);
-		if (requireLogin && customerID == 1) {
+		if (requireLogin && customerID != 1) {
 			response.sendRedirect("account.html");
 			return;
 		}
@@ -642,7 +644,7 @@ public class userController extends HttpServlet {
 			throws ServletException, IOException{
 		boolean requireLogin = true;
 		int customerID = getcustomerID(request);
-		if (requireLogin && customerID == 1) {
+		if (requireLogin && customerID != 1) {
 			response.sendRedirect("account.html");
 			return;
 		}
@@ -693,7 +695,7 @@ public class userController extends HttpServlet {
 			throws ServletException, IOException{
 		boolean requireLogin = true;
 		int customerID = getcustomerID(request);
-		if (requireLogin && customerID == 1) {
+		if (requireLogin && customerID != 1) {
 			response.sendRedirect("account.html");
 			return;
 		}
@@ -764,7 +766,7 @@ public class userController extends HttpServlet {
 			throws ServletException, IOException{
 		boolean requireLogin = true;
 		int customerID = getcustomerID(request);
-		if (requireLogin && customerID == 1) {
+		if (requireLogin && customerID != 1) {
 			response.sendRedirect("account.html");
 			return;
 		}
@@ -792,7 +794,7 @@ public class userController extends HttpServlet {
 			throws ServletException, IOException{
 		boolean requireLogin = true;
 		int customerID = getcustomerID(request);
-		if (requireLogin && customerID == 1) {
+		if (requireLogin && customerID != 1) {
 			response.sendRedirect("account.html");
 			return;
 		}
@@ -814,6 +816,30 @@ public class userController extends HttpServlet {
 		writer.close();
 		
 		RequestDispatcher dispatcher = request.getRequestDispatcher("/manage");
+		dispatcher.forward(request, response);
+	}
+	
+	public void adminPage(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		boolean requireLogin = true;
+		int customerID = getcustomerID(request);
+		if (requireLogin && customerID != 1) {
+			System.out.print("CC");
+			response.sendRedirect("/home");
+			return;
+		}
+		List<Comics> comics = bookDAO.findAllComics();
+		List<TextBook> textBook = bookDAO.findAllTextBook();
+		List<LightNovel> lightNovel = bookDAO.findAllLightNovel();
+		List<Customer> customers = customerDAO.findAllCustomers();
+		request.setAttribute("listComics", comics);
+		request.setAttribute("listTextBook", textBook);
+		request.setAttribute("listLightNovel", lightNovel);
+		request.setAttribute("customerID", customerID > 0);
+		request.setAttribute("customers", customers);
+//		Comics comic;
+//		comic.get
+		RequestDispatcher dispatcher = request.getRequestDispatcher("admin-index.jsp");
 		dispatcher.forward(request, response);
 	}
 	
