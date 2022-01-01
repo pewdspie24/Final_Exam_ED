@@ -24,8 +24,8 @@
             <nav>
                 <ul id="MenuItems">
                     <li><a href="home">Home</a></li>
-                    <li><a href="products.html">Products</a></li>
-                    <li><a href="">About</a></li>
+                    <li><a href="admin">Admin Site</a></li>
+                    <li><a href="orderlists">Order Histories</a></li>
                     <li><a href="">Contact</a></li>
                     <c:if test="${customerID}">
                         <li><a href="logout">Logout</a></li>
@@ -57,7 +57,10 @@
                                 <p>${item.book.title}</p>
                                 <small>${item.price}</small>
                                 <br>
-                                <a href="">Remove</a>
+                                <form action="dellBitemCart">
+								  <input type = "hidden" name = "bookitemID" value = ${item.ID} />
+								  <input type="submit" value="Remove">
+								</form>
                             </div>
                         </div>
                     </td>
@@ -83,7 +86,7 @@
             </table>
         </div>
         <div class="text-center">
-            <a href="checkoutDetail" class="btn btn-success">Checkout</a>
+            <a href="checkout" class="btn btn-success">Checkout</a>
         </div>
     </div>
     <div id="footer" style="width: 100%; height: 550px; background-color: #e8e8e8; margin-top: 30px;">

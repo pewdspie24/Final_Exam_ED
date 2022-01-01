@@ -44,7 +44,7 @@ style="position: absolute; top: 1rem; right: 1rem; z-index:100; background-color
                     <ul id="MenuItems">
                         <li><a href="home">Home</a></li>
                         <li><a href="admin">Admin Site</a></li>
-                        <li><a href="">About</a></li>
+                        <li><a href="orderlists">Order Histories</a></li>
                         <li><a href="">Contact</a></li>
                         <c:if test="${customerID}">
                             <li><a href="logout">Logout</a></li>
@@ -114,9 +114,9 @@ style="position: absolute; top: 1rem; right: 1rem; z-index:100; background-color
     </div>
     
     <div class="small-container">
-        <h2 class="title">Magazine</h2>
+        <h2 class="title">Text Book</h2>
         <div class="row">
-            <c:forEach items="${listMagazine}" var="product">
+            <c:forEach items="${listTextBook}" var="product">
                 <div class="col-3">
                     <div class="card">
                         <img class="card-img-top" src="images/book.jpg" alt="img product">
@@ -133,7 +133,7 @@ style="position: absolute; top: 1rem; right: 1rem; z-index:100; background-color
         </div>
     </div><!-- Featured Products -->
     <div class="small-container">
-        <h2 class="title">LightNovel</h2>
+        <h2 class="title">Light Novel</h2>
         <div class="row">
             <c:forEach items="${listLightNovel}" var="product">
                 <div class="col-3">

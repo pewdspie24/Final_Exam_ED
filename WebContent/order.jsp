@@ -24,8 +24,8 @@
             <nav>
                 <ul id="MenuItems">
                     <li><a href="home">Home</a></li>
-                    <li><a href="products.html">Products</a></li>
-                    <li><a href="">About</a></li>
+                    <li><a href="admin">Admin Site</a></li>
+                    <li><a href="orderlists">Order Histories</a></li>
                     <li><a href="">Contact</a></li>
                     <li><a href="account.html">Account</a></li>
                 </ul>

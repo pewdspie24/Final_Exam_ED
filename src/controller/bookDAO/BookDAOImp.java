@@ -35,6 +35,10 @@ public class BookDAOImp implements BookDAO {
 	private static final String INSERT_NEW_LN = "insert into book " + "(EmployeeID, PublisherID, AuthorID, Title, Summary, Years, IDLN, TranslateLanguage, VolumeLN, EditionsLN, IDCom, NameSeries, Artists, IDText, NumberOfPages, VolumeText, EditionsText) values "+" (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, NULL, NULL, NULL, NULL, NULL, NULL);";
 	private static final String INSERT_NEW_CM = "insert into book " + "(EmployeeID, PublisherID, AuthorID, Title, Summary, Years, IDLN, TranslateLanguage, VolumeLN, EditionsLN, IDCom, NameSeries, Artists, IDText, NumberOfPages, VolumeText, EditionsText) values "+" (?, ?, ?, ?, ?, ?, NULL, NULL, NULL, NULL, ?, ?, ?, NULL, NULL, NULL, NULL);";
 	private static final String INSERT_NEW_TX = "insert into book " + "(EmployeeID, PublisherID, AuthorID, Title, Summary, Years, IDLN, TranslateLanguage, VolumeLN, EditionsLN, IDCom, NameSeries, Artists, IDText, NumberOfPages, VolumeText, EditionsText) values "+" (?, ?, ?, ?, ?, ?, NULL, NULL, NULL, NULL, NULL, NULL, NULL, ?, ?, ?, ?);";
+	private static final String INSERT_NEW_AUT = "insert into author " + "(name, shortBio,birth) values" + " (?,?,?);";
+	private static final String INSERT_NEW_PUB = "insert into publisher " + "(address, name,operateyears) values" + " (?,?,?);";
+	private static final String SELECT_MAX_ID_AUT = "SELECT MAX(id) FROM author;";
+	private static final String SELECT_MAX_ID_PUB = "SELECT MAX(id) FROM publisher;";
 	private static final String SELECT_BOOK_BY_ID = "select * from book where ISBN =?;";
 	private static final String CHECK_TYPES_LN = "select * from book where ISBN =? and IDLN is not null;";
 	private static final String CHECK_TYPES_CM = "select * from book where ISBN =? and IDCom is not null;";
@@ -42,9 +46,9 @@ public class BookDAOImp implements BookDAO {
 	private static final String SELECT_ALL_COMICS = "select * from book where IDCom is not null;";
 	private static final String SELECT_ALL_LNS = "select * from book where IDLN is not null;";
 	private static final String SELECT_ALL_TEXTS = "select * from book where IDText is not null;";
-	private static final String UPDATE_TEXTS = "update book set PublisherID=?, AuthorID=?, Title=?, Summary=?, Years=?, NumberOfPages=?, VolumeText=?, EditionsText=? from book where ISBN=?;";
-	private static final String UPDATE_COMICS = "update book set PublisherID=?, AuthorID=?, Title=?, Summary=?, Years=?, NameSeries=?, Artists=?, from book where ISBN=?;";
-	private static final String UPDATE_LNS = "update book set PublisherID=?, AuthorID=?, Title=?, Summary=?, Years=?, TranslateLanguage=?, VolumeLN=?, EditionsLN=? from book where ISBN=?;";
+	private static final String UPDATE_TEXTS = "update book set PublisherID=?, AuthorID=?, Title=?, Summary=?, Years=?, NumberOfPages=?, VolumeText=?, EditionsText=? where ISBN=?;";
+	private static final String UPDATE_COMICS = "update book set PublisherID=?, AuthorID=?, Title=?, Summary=?, Years=?, NameSeries=?, Artists=? where ISBN=?;";
+	private static final String UPDATE_LNS = "update book set PublisherID=?, AuthorID=?, Title=?, Summary=?, Years=?, TranslateLanguage=?, VolumeLN=?, EditionsLN=? where ISBN=?;";
 	private static final String DELETE_BOOK = "delete from book where ISBN  = ?;";
 	private static final String SELECT_PUB_BY_ID = "select * from publisher where id =?";
 	private static final String SELECT_AUT_BY_ID = "select * from author where id =?";
@@ -75,6 +79,20 @@ public class BookDAOImp implements BookDAO {
         return connection;
     }
 	
+	public void addPublisher(Publisher publisher) {
+//		System.out.println(INSERT_ACC_SQL);
+        // try-with-resource statement will auto close the connection.
+        try (Connection connection = getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(INSERT_NEW_PUB)) {
+        	preparedStatement.setString(1, publisher.getAddress());
+            preparedStatement.setString(2, publisher.getName());
+            preparedStatement.setInt(3, publisher.getOperateYears());
+            System.out.println(preparedStatement);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+	}
+	
 	public Publisher getPublisher(int ID) {
 		Publisher pub = null;
 		// Step 1: Establishing a Connection
@@ -100,6 +118,34 @@ public class BookDAOImp implements BookDAO {
 		return pub;
 	}
 	
+	public int getMaxIDPub(){
+		int id = 0;
+		try (Connection connection = getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(SELECT_MAX_ID_PUB)) {
+            System.out.println(preparedStatement);
+            ResultSet rs = preparedStatement.executeQuery();
+            while(rs.next()){
+            	id = rs.getInt("MAX(id)");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+		return id;
+	}
+	
+	public void addAuthor(Author author) {
+//		System.out.println(INSERT_ACC_SQL);
+        // try-with-resource statement will auto close the connection.
+        try (Connection connection = getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(INSERT_NEW_AUT)) {
+        	preparedStatement.setString(1, author.getName());
+            preparedStatement.setString(2, author.getShortBio());
+            preparedStatement.setString(3, author.getBirth());
+            System.out.println(preparedStatement);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+	}
+	
 	public Author getAuthor(int ID) {
 		Author aut = null;
 		// Step 1: Establishing a Connection
@@ -123,6 +169,20 @@ public class BookDAOImp implements BookDAO {
 			e.printStackTrace();
 		}
 		return aut;
+	}
+	
+	public int getMaxIDAut(){
+		int id = 0;
+		try (Connection connection = getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(SELECT_MAX_ID_AUT)) {
+            System.out.println(preparedStatement);
+            ResultSet rs = preparedStatement.executeQuery();
+            while(rs.next()){
+            	id = rs.getInt("MAX(id)");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+		return id;
 	}
 	
 	public Area getArea(int ID) {
@@ -449,17 +509,16 @@ public class BookDAOImp implements BookDAO {
 //		System.out.println(INSERT_ACC_SQL);
         // try-with-resource statement will auto close the connection.
         try (Connection connection = getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(INSERT_NEW_LN)) {
-        	preparedStatement.setInt(1, book.getISBN());
-        	preparedStatement.setInt(2, book.getEmployee().getID());
-            preparedStatement.setInt(3, book.getPublisher().getID());
-            preparedStatement.setInt(4, book.getAuthor().getID());
-            preparedStatement.setString(5, book.getTitle());
-        	preparedStatement.setString(6, book.getSummary());
-            preparedStatement.setInt(7, book.getYears());
-            preparedStatement.setInt(8, book.getID());
-            preparedStatement.setString(9, book.getTranslateLanguage());
-            preparedStatement.setInt(10, book.getVolume());
-            preparedStatement.setInt(11, book.getEditions());
+        	preparedStatement.setInt(1, book.getEmployee().getID());
+            preparedStatement.setInt(2, book.getPublisher().getID());
+            preparedStatement.setInt(3, book.getAuthor().getID());
+            preparedStatement.setString(4, book.getTitle());
+        	preparedStatement.setString(5, book.getSummary());
+            preparedStatement.setInt(6, book.getYears());
+            preparedStatement.setInt(7, book.getID());
+            preparedStatement.setString(8, book.getTranslateLanguage());
+            preparedStatement.setInt(9, book.getVolume());
+            preparedStatement.setInt(10, book.getEditions());
             System.out.println(preparedStatement);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
@@ -471,16 +530,15 @@ public class BookDAOImp implements BookDAO {
 //		System.out.println(INSERT_ACC_SQL);
         // try-with-resource statement will auto close the connection.
         try (Connection connection = getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(INSERT_NEW_CM)) {
-        	preparedStatement.setInt(1, book.getISBN());
-        	preparedStatement.setInt(2, book.getEmployee().getID());
-            preparedStatement.setInt(3, book.getPublisher().getID());
-            preparedStatement.setInt(4, book.getAuthor().getID());
-            preparedStatement.setString(5, book.getTitle());
-        	preparedStatement.setString(6, book.getSummary());
-            preparedStatement.setInt(7, book.getYears());
-            preparedStatement.setInt(8, book.getID());
-            preparedStatement.setString(9, book.getNameSeries());
-            preparedStatement.setString(10, book.getArtists());
+        	preparedStatement.setInt(1, book.getEmployee().getID());
+            preparedStatement.setInt(2, book.getPublisher().getID());
+            preparedStatement.setInt(3, book.getAuthor().getID());
+            preparedStatement.setString(4, book.getTitle());
+        	preparedStatement.setString(5, book.getSummary());
+            preparedStatement.setInt(6, book.getYears());
+            preparedStatement.setInt(7, book.getID());
+            preparedStatement.setString(8, book.getNameSeries());
+            preparedStatement.setString(9, book.getArtists());
             System.out.println(preparedStatement);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
@@ -492,17 +550,16 @@ public class BookDAOImp implements BookDAO {
 //		System.out.println(INSERT_ACC_SQL);
         // try-with-resource statement will auto close the connection.
         try (Connection connection = getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(INSERT_NEW_TX)) {
-        	preparedStatement.setInt(1, book.getISBN());
-        	preparedStatement.setInt(2, book.getEmployee().getID());
-            preparedStatement.setInt(3, book.getPublisher().getID());
-            preparedStatement.setInt(4, book.getAuthor().getID());
-            preparedStatement.setString(5, book.getTitle());
-        	preparedStatement.setString(6, book.getSummary());
-            preparedStatement.setInt(7, book.getYears());
-            preparedStatement.setInt(8, book.getID());
-            preparedStatement.setInt(9, book.getNumberOfPages());
-            preparedStatement.setInt(10, book.getVolume());
-            preparedStatement.setInt(11, book.getEditions());
+        	preparedStatement.setInt(1, book.getEmployee().getID());
+            preparedStatement.setInt(2, book.getPublisher().getID());
+            preparedStatement.setInt(3, book.getAuthor().getID());
+            preparedStatement.setString(4, book.getTitle());
+        	preparedStatement.setString(5, book.getSummary());
+            preparedStatement.setInt(6, book.getYears());
+            preparedStatement.setInt(7, book.getID());
+            preparedStatement.setInt(8, book.getNumberOfPages());
+            preparedStatement.setInt(9, book.getVolume());
+            preparedStatement.setInt(10, book.getEditions());
             System.out.println(preparedStatement);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
@@ -545,7 +602,7 @@ public class BookDAOImp implements BookDAO {
 				Author author = getAuthor(authorID);
 				int publisherID = rs.getInt("PublisherID");
 				Publisher publisher = getPublisher(publisherID);
-				int IDLN = rs.getInt("IDCM");
+				int IDLN = rs.getInt("IDCom");
 				String nameSeries = rs.getString("nameSeries");
 				String artists = rs.getString("artists");
 				Comics book = new Comics(ISBN, title, summary, years, employee, author, publisher, IDLN, nameSeries, artists);
@@ -629,17 +686,15 @@ public class BookDAOImp implements BookDAO {
 
 	public void editLNBook(LightNovel book) {
 		try (Connection connection = getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_LNS)) {
-			preparedStatement.setInt(1, book.getISBN());
-        	preparedStatement.setInt(2, book.getEmployee().getID());
-            preparedStatement.setInt(3, book.getPublisher().getID());
-            preparedStatement.setInt(4, book.getAuthor().getID());
-            preparedStatement.setString(5, book.getTitle());
-        	preparedStatement.setString(6, book.getSummary());
-            preparedStatement.setInt(7, book.getYears());
-            preparedStatement.setInt(8, book.getID());
-            preparedStatement.setString(9, book.getTranslateLanguage());
-            preparedStatement.setInt(10, book.getVolume());
-            preparedStatement.setInt(11, book.getEditions());
+			preparedStatement.setInt(9, book.getISBN());
+            preparedStatement.setInt(1, book.getPublisher().getID());
+            preparedStatement.setInt(2, book.getAuthor().getID());
+            preparedStatement.setString(3, book.getTitle());
+        	preparedStatement.setString(4, book.getSummary());
+            preparedStatement.setInt(5, book.getYears());
+            preparedStatement.setString(6, book.getTranslateLanguage());
+            preparedStatement.setInt(7, book.getVolume());
+            preparedStatement.setInt(8, book.getEditions());
             System.out.println(preparedStatement);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
@@ -649,16 +704,14 @@ public class BookDAOImp implements BookDAO {
 	
 	public void editCMBook(Comics book) {
 		try (Connection connection = getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_COMICS)) {
-			preparedStatement.setInt(1, book.getISBN());
-        	preparedStatement.setInt(2, book.getEmployee().getID());
-            preparedStatement.setInt(3, book.getPublisher().getID());
-            preparedStatement.setInt(4, book.getAuthor().getID());
-            preparedStatement.setString(5, book.getTitle());
-        	preparedStatement.setString(6, book.getSummary());
-            preparedStatement.setInt(7, book.getYears());
-            preparedStatement.setInt(8, book.getID());
-            preparedStatement.setString(9, book.getNameSeries());
-            preparedStatement.setString(10, book.getArtists());
+			preparedStatement.setInt(8, book.getISBN());
+			preparedStatement.setInt(1, book.getPublisher().getID());
+            preparedStatement.setInt(2, book.getAuthor().getID());
+            preparedStatement.setString(3, book.getTitle());
+        	preparedStatement.setString(4, book.getSummary());
+            preparedStatement.setInt(5, book.getYears());
+            preparedStatement.setString(6, book.getNameSeries());
+            preparedStatement.setString(7, book.getArtists());
             System.out.println(preparedStatement);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
@@ -668,17 +721,15 @@ public class BookDAOImp implements BookDAO {
 	
 	public void editTXBook(TextBook book) {
 		try (Connection connection = getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_TEXTS)) {
-			preparedStatement.setInt(1, book.getISBN());
-        	preparedStatement.setInt(2, book.getEmployee().getID());
-            preparedStatement.setInt(3, book.getPublisher().getID());
-            preparedStatement.setInt(4, book.getAuthor().getID());
-            preparedStatement.setString(5, book.getTitle());
-        	preparedStatement.setString(6, book.getSummary());
-            preparedStatement.setInt(7, book.getYears());
-            preparedStatement.setInt(8, book.getID());
-            preparedStatement.setInt(9, book.getNumberOfPages());
-            preparedStatement.setInt(10, book.getVolume());
-            preparedStatement.setInt(11, book.getEditions());
+			preparedStatement.setInt(9, book.getISBN());
+            preparedStatement.setInt(1, book.getPublisher().getID());
+            preparedStatement.setInt(2, book.getAuthor().getID());
+            preparedStatement.setString(3, book.getTitle());
+        	preparedStatement.setString(4, book.getSummary());
+            preparedStatement.setInt(5, book.getYears());
+            preparedStatement.setInt(6, book.getNumberOfPages());
+            preparedStatement.setInt(7, book.getVolume());
+            preparedStatement.setInt(8, book.getEditions());
             System.out.println(preparedStatement);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
@@ -742,8 +793,8 @@ public class BookDAOImp implements BookDAO {
                 int years = rs.getInt("years");
                 int iD = rs.getInt("IDLN");
                 String translateLanguage = rs.getString("translateLanguage");
-                int volume = rs.getInt("volume");
-                int editions = rs.getInt("editions");
+                int volume = rs.getInt("volumeLN");
+                int editions = rs.getInt("editionsLN");
                 book = new LightNovel(ISBN, title, summary, years, employee, author, publisher, iD, translateLanguage, volume, editions);
             }
         } catch (SQLException e) {
@@ -810,8 +861,8 @@ public class BookDAOImp implements BookDAO {
                 String summary = rs.getString("summary");
                 int years = rs.getInt("years");
                 int iD = rs.getInt("IDText");
-                int volume = rs.getInt("volume");
-                int editions = rs.getInt("editions");
+                int volume = rs.getInt("volumeText");
+                int editions = rs.getInt("editionsText");
                 int numberOfPages = rs.getInt("numberOfPages");
                 book = new TextBook(ISBN, title, summary, years, employee, author, publisher, iD, numberOfPages, volume, editions);
             }

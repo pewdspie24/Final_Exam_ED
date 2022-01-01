@@ -27,8 +27,8 @@
             <nav>
                 <ul id="MenuItems">
                     <li><a href="home">Home</a></li>
-                    <li><a href="products.html">Products</a></li>
-                    <li><a href="">About</a></li>
+                    <li><a href="admin">Admin Site</a></li>
+                    <li><a href="orderlists">Order Histories</a></li>
                     <li><a href="">Contact</a></li>
                     <c:if test="${customerID}">
                         <li><a href="logout">Logout</a></li>
@@ -45,6 +45,7 @@
 
     <!-- Cart items details -->
     <div class="small-container">
+    	<h1>Customer List</h1>
         <table id="customer" class="table table-striped table-bordered">
 	        <thead>
 	            <tr>
@@ -67,17 +68,23 @@
 	            </c:forEach>
 	        </tbody>
         </table>
+        <form action="/Final-Exam/addnewbook">
+		    <input type="submit" value="Add Book" />
+		</form>
+        <h1>Comics List</h1>
         <table id="comics" class="table table-striped table-bordered">
 	        <thead>
 	            <tr>
 	                <th>ISBN</th>
 	                <th>Title</th>
-	                <th>Artists Name</th>
-	                <th>Author Name</th>
+	                <th>Author</th>
 	                <th>Years</th>
-	                <th>Series Name</th>
-	                <th>Publisher Name</th>
+	                <th>Publisher</th>
 	                <th>Summary</th>
+	                <th>Artists</th>
+	                <th>Series Name</th>
+	                <th>Action1</th>
+	                <th>Action2</th>
 	            </tr>
 			</thead>
 			<tbody>
@@ -85,105 +92,154 @@
 	                <tr>
 	                    <td>${item.ISBN}</td>
 	                    <td>${item.title}</td>
-	                    <td>${item.artists}</td>
-	                    <td>${item.author}</td>
+	                    <td>${item.author.name}</td>
 	                    <td>${item.years}</td>
-	                    <td>${item.nameSeries}</td>
 	                    <td>${item.publisher.name}</td>
 	                    <td>${item.summary}</td>
+	                    <td>${item.artists}</td>
+	                    <td>${item.nameSeries}</td>
 	                    <td>
-	                    	<div class="btn btn-primary text-center" onclick="addbook(${item.ISBN})">Edit</div>
+	                    	<form action="editbook">
+							  <input type = "hidden" name = "ISBN" value = ${item.ISBN} />
+							  <input type="submit" value="Edit">
+							</form>
+						</td>
+						<td>
+	                    	<form action="uploadbookitem">
+							  <input type = "hidden" name = "ISBN" value = ${item.ISBN} />
+							  <input type="submit" value="Upload">
+							</form>
 						</td>
 	                </tr>
 	            </c:forEach>
 	        </tbody>
         </table>
+        <h1>Text Book List</h1>
         <table id="textBook" class="table table-striped table-bordered">
 	        <thead>
 	            <tr>
-	                <th>Product</th>
-	                <th>Quantity</th>
-	                <th>Subtotal</th>
+	                <th>ISBN</th>
+	                <th>Title</th>
+	                <th>Author</th>
+	                <th>Years</th>
+	                <th>Publisher</th>
+	                <th>Summary</th>
+	                <th>Editions</th>
+	                <th>Volume</th>
+	                <th>Num of Pages</th>
+	                <th>Action1</th>
+	                <th>Action2</th>
 	            </tr>
 			</thead>
 			<tbody>
-	            <c:forEach items="${bookItems}" var="item" varStatus="i">
+	            <c:forEach items="${listTextBook}" var="item" varStatus="i">
 	                <tr>
+	                    <td>${item.ISBN}</td>
+	                    <td>${item.title}</td>
+	                    <td>${item.author.name}</td>
+	                    <td>${item.years}</td>
+	                    <td>${item.publisher.name}</td>
+	                    <td>${item.summary}</td>
+	                    <td>${item.editions}</td>
+	                    <td>${item.volume}</td>
+	                    <td>${item.numberOfPages}</td>
 	                    <td>
-	                        <div class="cart-info">
-	                            <img src="images/book.jpg">
-	                            <div>
-	                                <p>${item.book.title}</p>
-	                                <small>${item.price}</small>
-	                                <br>
-	                                <a href="">Remove</a>
-	                            </div>
-	                        </div>
-	                    </td>
-	                    <td><input type="number" value="${bookQuantity[i.index]}"></td>
-	                    <td>${bookPrice[i.index]}d</td>
+	                    	<form action="editbook">
+							  <input type = "hidden" name = "ISBN" value = ${item.ISBN} />
+							  <input type="submit" value="Edit">
+							</form>
+						</td>
+						<td>
+	                    	<form action="uploadbookitem">
+							  <input type = "hidden" name = "ISBN" value = ${item.ISBN} />
+							  <input type="submit" value="Upload">
+							</form>
+						</td>
 	                </tr>
 	            </c:forEach>
 	        </tbody>
         </table>
+        <h1>Light Novel List</h1>
         <table id="lightNovel" class="table table-striped table-bordered">
 	        <thead>
 	            <tr>
-	                <th>Product</th>
-	                <th>Quantity</th>
-	                <th>Subtotal</th>
+	                <th>ISBN</th>
+	                <th>Title</th>
+	                <th>Author</th>
+	                <th>Years</th>
+	                <th>Publisher</th>
+	                <th>Summary</th>
+	                <th>Editions</th>
+	                <th>Volume</th>
+	                <th>Translate Language</th>
+	                <th>Action1</th>
+	                <th>Action2</th>
 	            </tr>
 			</thead>
 			<tbody>
-	            <c:forEach items="${bookItems}" var="item" varStatus="i">
+	            <c:forEach items="${listLightNovel}" var="item" varStatus="i">
 	                <tr>
+	                    <td>${item.ISBN}</td>
+	                    <td>${item.title}</td>
+	                    <td>${item.author.name}</td>
+	                    <td>${item.years}</td>
+	                    <td>${item.publisher.name}</td>
+	                    <td>${item.summary}</td>
+	                    <td>${item.editions}</td>
+	                    <td>${item.volume}</td>
+	                    <td>${item.translateLanguage}</td>
 	                    <td>
-	                        <div class="cart-info">
-	                            <img src="images/book.jpg">
-	                            <div>
-	                                <p>${item.book.title}</p>
-	                                <small>${item.price}</small>
-	                                <br>
-	                                <a href="">Remove</a>
-	                            </div>
-	                        </div>
-	                    </td>
-	                    <td><input type="number" value="${bookQuantity[i.index]}"></td>
-	                    <td>${bookPrice[i.index]}d</td>
+	                    	<form action="editbook">
+							  <input type = "hidden" name = "ISBN" value = ${item.ISBN} />
+							  <input type="submit" value="Edit">
+							</form>
+						</td>
+						<td>
+	                    	<form action="uploadbookitem">
+							  <input type = "hidden" name = "ISBN" value = ${item.ISBN} />
+							  <input type="submit" value="Upload">
+							</form>
+						</td>
 	                </tr>
 	            </c:forEach>
 	        </tbody>
         </table>
-        <form action="/addnewbook">
-		    <input type="submit" value="Add Book" />
-		</form>
-    </div>
-    <div id="footer" style="width: 100%; height: 550px; background-color: #e8e8e8; margin-top: 30px;">
-        <h3 style="font-size: 40px; text-align: center; padding: 50px 0;">About</h3>
-        <div class="row">
-            <div class="col-6">
-                <ul class="list-group-flush">
-                    <li class="list-group-item">
-                        <h4>Liên hệ</h4>
-                    </li>
-                    <li class="list-group-item"><i class="fas fa-map-marker"></i> Địa chỉ: PTIT, Hà Nội</li>
-                    <li class="list-group-item"><i class="fas fa-envelope"></i> Email: abcabcbabc@gmail.com</li>
-                    <li class="list-group-item"><i class="fas fa-mobile-alt"></i> SĐT: 0123456879</li>
-                    <li class="list-group-item"><i class="fas fa-phone"></i> Đường dây nóng: 19000099</li>
-                </ul>
-            </div>
-
-            <div class="col-6">
-                <ul class="list-group-flush">
-                    <li class="list-group-item">
-                        <h4>Theo dõi chúng tôi trên</h4>
-                    </li>
-                    <li class="list-group-item"><i class="fab fa-facebook-square"></i> Facebook</li>
-                    <li class="list-group-item"><i class="fab fa-instagram"></i> Instagram</li>
-                    <li class="list-group-item"><i class="fab fa-twitter-square"></i> Twiter</li>
-                </ul>
-            </div>
-        </div>
+		<h1>Bookitem List</h1>
+		<table id="bookitem" class="table table-striped table-bordered">
+	        <thead>
+	            <tr>
+	                <th>ID</th>
+	                <th>ISBN</th>
+	                <th>Title</th>
+	                <th>Author</th>
+	                <th>Price</th>
+	                <th>Discount</th>
+	                <th>Uploaded Date</th>
+	                <th>InStock Amount</th>
+	                <th>Action</th>
+	            </tr>
+			</thead>
+			<tbody>
+	            <c:forEach items="${bookitem}" var="item" varStatus="i">
+	                <tr>
+	                    <td>${item.ID}</td>
+	                    <td>${item.book.ISBN}</td>
+	                    <td>${item.book.title}</td>
+	                    <td>${item.book.author.name}</td>
+	                    <td>${item.price}</td>
+	                    <td>${item.discount}</td>
+	                    <td>${item.uploadDate}</td>
+	                    <td>${item.inStock}</td>
+	                    <td>
+	                    	<form action="editbookitem">
+							  <input type = "hidden" name = "ISBN" value = ${item.book.ISBN} />
+							  <input type="submit" value="Edit">
+							</form>
+						</td>
+	                </tr>
+	            </c:forEach>
+	        </tbody>
+        </table>
     </div>
 
     <script>
@@ -213,12 +269,20 @@
 	    $(document).ready(function() {
 	        $('#textBook').DataTable();
 	    } );
-    </script>
+	</script>
+    
     <script>
 	    $(document).ready(function() {
 	        $('#lightNovel').DataTable();
 	    } );
     </script>
+    
+    <script>
+	    $(document).ready(function() {
+	        $('#bookitem').DataTable();
+	    } );
+    </script>
+    
     <script>
         function editbook(ISBN) {
             $.ajax({
@@ -232,7 +296,7 @@
                 }
             });
         }
-        </script>
+      </script>
 
 </body>
 

@@ -166,18 +166,38 @@ public class userController extends HttpServlet {
 					editBookForm(request, response);
 					 break;
 				case "/uploadbookitem":
-					uploadBookitem(request, response);
+					addBookitemForm(request, response);
 					 break;
 				case "/editbookitem":
-					editBookitem(request, response);
+					editBookitemForm(request, response);
 					 break;
 				case "/home":
 					listBooks(request, response);
 					break;
 				case "/manage":
-					listBooksEmployee(request, response);
+					adminPage(request, response);
+					break;
 				case "/admin":
 					adminPage(request, response);
+					break;
+				case "/processadd":
+					addBookC(request, response);
+					break;
+				case "/processedit":
+					editBookC(request, response);
+					break;
+				case "/processedititem":
+					editBookitem(request, response);
+					break;
+				case "/processadditem":
+					uploadBookitem(request, response);
+					break;
+				case "/dellbitemcart":
+					dellBitemCart(request, response);
+					break;
+				case "/orderlists":
+					orderLists(request, response);
+					break;
 				default:
 					listBooks(request, response);
 					break;
@@ -241,33 +261,14 @@ public class userController extends HttpServlet {
 			response.sendRedirect("account.html");
 			return;
 		}
-		List<Comics> comics = bookDAO.findAllComics();
-		List<TextBook> textBook = bookDAO.findAllTextBook();
-		List<LightNovel> lightNovel = bookDAO.findAllLightNovel();
+		List<Bookitem> comics = bookitemDAO.getAllCMitem();
+		List<Bookitem> textBook = bookitemDAO.getAllTXitem();
+		List<Bookitem> lightNovel = bookitemDAO.getAllLNitem();
 		request.setAttribute("listComics", comics);
 		request.setAttribute("listTextBook", textBook);
 		request.setAttribute("listLightNovel", lightNovel);
 		request.setAttribute("customerID", customerID > 0);
 		RequestDispatcher dispatcher = request.getRequestDispatcher("booklist.jsp");
-		dispatcher.forward(request, response);
-	}
-	
-	public void listBooksEmployee(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
-		boolean requireLogin = false;
-		int customerID = getcustomerID(request);
-		if (requireLogin && customerID <= 0) {
-			response.sendRedirect("account.html");
-			return;
-		}
-		List<Comics> comics = bookDAO.findAllComics();
-		List<TextBook> textBook = bookDAO.findAllTextBook();
-		List<LightNovel> lightNovel = bookDAO.findAllLightNovel();
-		request.setAttribute("listComics", comics);
-		request.setAttribute("listTextBook", textBook);
-		request.setAttribute("listLightNovel", lightNovel);
-		request.setAttribute("customerID", customerID > 0);
-		RequestDispatcher dispatcher = request.getRequestDispatcher("booklistemp.jsp");
 		dispatcher.forward(request, response);
 	}
 	
@@ -314,7 +315,7 @@ public class userController extends HttpServlet {
 		}
 		String bookItemId = request.getParameter("bookItemId");
 		int quantity = Integer.parseInt(request.getParameter("quantity"));
-		Bookitem bookItem = bookitemDAO.getBookitem(Integer.parseInt(bookItemId));
+		Bookitem bookItem = bookitemDAO.getBookitemByID(Integer.parseInt(bookItemId));
 		Cart cart = cartDAO.getCart(customerID);
 		if (cart == null) {
 			cart = new Cart(1, customerDAO.getCustomer(customerID), dateFormat.format(new Date()),
@@ -359,15 +360,16 @@ public class userController extends HttpServlet {
 
 		for (Map.Entry<Integer, Integer> entry : books.entrySet()) {
 			System.out.println(entry.getKey() + " " + entry.getValue());
-			Bookitem bookItem = bookitemDAO.getBookitem(entry.getKey());
+			Bookitem bookItem = bookitemDAO.getBookitemByID(entry.getKey());
 			bookItems.add(bookItem);
 			bookQuantity.add(entry.getValue());
+			System.out.println("CCC"+bookItem.getBook().getTitle());
 			totalPrice += bookItem.getPrice() * entry.getValue();
 			bookPrice.add(bookItem.getPrice() * entry.getValue());
 			discount += bookItem.getDiscount() * entry.getValue();
 		}
 
-		request.setAttribute("bookitems", bookItems);
+		request.setAttribute("bookItems", bookItems);
 		request.setAttribute("bookQuantity", bookQuantity);
 		request.setAttribute("bookPrice", bookPrice);
 
@@ -427,7 +429,7 @@ public class userController extends HttpServlet {
 		
 		for (Map.Entry<Integer, Integer> entryBook : books.entrySet()) {
 			System.out.println(entryBook.getKey() + " " + entryBook.getValue());
-			Bookitem bookItem = bookitemDAO.getBookitem(entryBook.getKey());
+			Bookitem bookItem = bookitemDAO.getBookitemByID(entryBook.getKey());
 			bookitems.add(bookItem);
 			bookQuantity.add(entryBook.getValue());
 			totalQuantities += entryBook.getValue();
@@ -453,7 +455,7 @@ public class userController extends HttpServlet {
 		cartDAO.editCart(cart, totalPrice - discount - voucherdiscount + shipmentPrice, totalQuantities);
 		billDAO.addBill(new Bill(1, cart.getTotalPrice(), dateFormat.format(new Date()), discount, order, employeeDAO.getEmployee(1)));
 		cartDAO.createCart(new Cart(cart.getID()+1, customerDAO.getCustomer(getcustomerID(request)), dateFormat.format(new Date()), dateFormat.format(new Date()), 0, (float) 0.0));
-		request.setAttribute("bookitems", bookitems);
+		request.setAttribute("bookItems", bookitems);
 		request.setAttribute("bookQuantity", bookQuantity);
 		request.setAttribute("bookPrice", bookPrice);
 		
@@ -507,7 +509,7 @@ public class userController extends HttpServlet {
 		}
 		for (Map.Entry<Integer, Integer> entryBook : books.entrySet()) {
 			System.out.println(entryBook.getKey() + " " + entryBook.getValue());
-			Bookitem bookitem = bookitemDAO.getBookitem(entryBook.getKey());
+			Bookitem bookitem = bookitemDAO.getBookitemByID(entryBook.getKey());
 			bookitems.add(bookitem);
 			bookQuantity.add(entryBook.getValue());
 			totalQuantities += entryBook.getValue();
@@ -584,12 +586,13 @@ public class userController extends HttpServlet {
 		response.sendRedirect("addbookform.jsp");
 	}
 	
-	public void addBook(HttpServletRequest request, HttpServletResponse response)
+	public void addBookC(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException{
 		boolean requireLogin = true;
 		int customerID = getcustomerID(request);
 		if (requireLogin && customerID != 1) {
 			response.sendRedirect("account.html");
+			System.out.println("cc");
 			return;
 		}
 		
@@ -598,45 +601,53 @@ public class userController extends HttpServlet {
 		String nameAuthor = request.getParameter("nameAuthor");
 		String shortBio = request.getParameter("shortBio");
 		String birth = request.getParameter("birth");
-		Author author = new Author(1, nameAuthor, shortBio, birth);
+		Author authortmp = new Author(1, nameAuthor, shortBio, birth);
+		bookDAO.addAuthor(authortmp);
+		Author author = bookDAO.getAuthor(bookDAO.getMaxIDAut());
 		String address = request.getParameter("address");
 		String namePublisher = request.getParameter("namePublisher");
 		int operateYears = Integer.parseInt(request.getParameter("operateYears"));
-		Publisher publisher = new Publisher(1, address, namePublisher, operateYears);
+		Publisher publishertmp = new Publisher(1, address, namePublisher, operateYears);
+		bookDAO.addPublisher(publishertmp);
+		Publisher publisher = bookDAO.getPublisher(bookDAO.getMaxIDPub());
 		String title = request.getParameter("title");
 		String summary = request.getParameter("summary");
 		int years = Integer.parseInt(request.getParameter("years"));
-		int type = Integer.parseInt(request.getParameter("type"));
-		
-		if(type == 1){
+		String type = request.getParameter("type");
+		System.out.println("smt");
+		if(type.equals("LN")){
 			String translateLanguage = request.getParameter("translateLanguage");
 			int volume = Integer.parseInt(request.getParameter("volume"));
 			int editions = Integer.parseInt(request.getParameter("editions"));
 			LightNovel book = new LightNovel(1, title, summary, years, employee, author, publisher, 1, translateLanguage, volume, editions);
 			bookDAO.addBookLN(book);
-			PrintWriter writer = response.getWriter();
-			writer.write("Added Light Novel " + book.getID() + " to system");
-			writer.close();
-		} else if(type == 2){
+			System.out.println("Add LN done ");
+			System.out.println(summary+translateLanguage);
+//			PrintWriter writer = response.getWriter();
+//			writer.write("Added Light Novel " + book.getID() + " to system");
+//			writer.close();
+		} else if(type.equals("CM")){
 			String nameSeries = request.getParameter("nameSeries");
 			String artists = request.getParameter("artists");
 			Comics book = new Comics(1, title, summary, years, employee, author, publisher, 1, nameSeries, artists);
 			bookDAO.addBookCM(book);
-			PrintWriter writer = response.getWriter();
-			writer.write("Added Comic " + book.getID() + " to system");
-			writer.close();
-		} else{
+			System.out.println("Add CM done ");
+//			PrintWriter writer = response.getWriter();
+//			writer.write("Added Comic " + book.getID() + " to system");
+//			writer.close();
+		} else if(type.equals("TX")){
 			int numberOfPages = Integer.parseInt(request.getParameter("numberOfPages"));
-			int volume = Integer.parseInt(request.getParameter("volume"));
-			int editions = Integer.parseInt(request.getParameter("editions"));
+			int volume = Integer.parseInt(request.getParameter("volumeTX"));
+			int editions = Integer.parseInt(request.getParameter("editionsTX"));
 			TextBook book = new TextBook(1, title, summary, years, employee, author, publisher, 1, numberOfPages, volume, editions);
 			bookDAO.addBookTX(book);
-			PrintWriter writer = response.getWriter();
-			writer.write("Added Text Book " + book.getID() + " to system");
-			writer.close();
+			System.out.println("Add TX done ");
+//			PrintWriter writer = response.getWriter();
+//			writer.write("Added Text Book " + book.getID() + " to system");
+//			writer.close();
 		}
-		
-		RequestDispatcher dispatcher = request.getRequestDispatcher("/manage");
+//		response.sendRedirect("admin-index.jsp");  
+		RequestDispatcher dispatcher = request.getRequestDispatcher("/admin");
 		dispatcher.forward(request, response);
 	}
 	
@@ -664,34 +675,40 @@ public class userController extends HttpServlet {
 		
 		if(type == 1){
 			LightNovel ln = bookDAO.getLNByID(ISBN);
+			request.setAttribute("type", "LightNovel");
 			request.setAttribute("ID", String.valueOf(ln.getID()));
 			request.setAttribute("translateLanguage", ln.getTranslateLanguage());
 			request.setAttribute("volume", String.valueOf(ln.getVolume())); //int
 			request.setAttribute("editions", String.valueOf(ln.getEditions())); //int
-			RequestDispatcher dispatcher = request.getRequestDispatcher("editlnbook.jsp");
+			RequestDispatcher dispatcher = request.getRequestDispatcher("editbookform.jsp");
 			dispatcher.forward(request, response);
+			return;
 		} else if(type == 2){
 			Comics cm = bookDAO.getCMByID(ISBN);
+			request.setAttribute("type", "Comics");
 			request.setAttribute("ID", String.valueOf(cm.getID()));
 			request.setAttribute("nameSeries", cm.getNameSeries());
 			request.setAttribute("artists", cm.getArtists());
-			RequestDispatcher dispatcher = request.getRequestDispatcher("editcmbook.jsp");
+			RequestDispatcher dispatcher = request.getRequestDispatcher("editbookform.jsp");
 			dispatcher.forward(request, response);
-		} else{
+			return;
+		} else if(type == 3){
 			TextBook tx = bookDAO.getTXByID(ISBN);
+			request.setAttribute("type", "TextBook");
 			request.setAttribute("ID", String.valueOf(tx.getID()));
 			request.setAttribute("numberOfPages", String.valueOf(tx.getNumberOfPages())); //int
-			request.setAttribute("volume", String.valueOf(tx.getVolume())); //int
-			request.setAttribute("editions", String.valueOf(tx.getEditions())); //int
-			RequestDispatcher dispatcher = request.getRequestDispatcher("edittxbook.jsp");
+			request.setAttribute("volumeTX", String.valueOf(tx.getVolume())); //int
+			request.setAttribute("editionsTX", String.valueOf(tx.getEditions())); //int
+			RequestDispatcher dispatcher = request.getRequestDispatcher("editbookform.jsp");
 			dispatcher.forward(request, response);
+			return;
 		}
 		
 		RequestDispatcher dispatcher = request.getRequestDispatcher("/manage");
 		dispatcher.forward(request, response);
 	}
 	
-	public void editBook(HttpServletRequest request, HttpServletResponse response)
+	public void editBookC(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException{
 		boolean requireLogin = true;
 		int customerID = getcustomerID(request);
@@ -706,45 +723,49 @@ public class userController extends HttpServlet {
 		String nameAuthor = request.getParameter("nameAuthor");
 		String shortBio = request.getParameter("shortBio");
 		String birth = request.getParameter("birth");
-		Author author = new Author(1, nameAuthor, shortBio, birth);
+		Author authortmp = new Author(1, nameAuthor, shortBio, birth);
+		bookDAO.addAuthor(authortmp);
+		Author author = bookDAO.getAuthor(bookDAO.getMaxIDAut());
 		String address = request.getParameter("address");
 		String namePublisher = request.getParameter("namePublisher");
 		int operateYears = Integer.parseInt(request.getParameter("operateYears"));
-		Publisher publisher = new Publisher(1, address, namePublisher, operateYears);
+		Publisher publishertmp = new Publisher(1, address, namePublisher, operateYears);
+		bookDAO.addPublisher(publishertmp);
+		Publisher publisher = bookDAO.getPublisher(bookDAO.getMaxIDPub());
 		String title = request.getParameter("title");
 		String summary = request.getParameter("summary");
 		int years = Integer.parseInt(request.getParameter("years"));
-		int type = Integer.parseInt(request.getParameter("type"));
+		String type = request.getParameter("type");
 		
-		if(type == 1){
+		if(type.equals("LightNovel")){
 			int ID = Integer.parseInt(request.getParameter("ID"));
 			String translateLanguage = request.getParameter("translateLanguage");
 			int volume = Integer.parseInt(request.getParameter("volume"));
 			int editions = Integer.parseInt(request.getParameter("editions"));
 			LightNovel book = new LightNovel(ISBN, title, summary, years, employee, author, publisher, ID, translateLanguage, volume, editions);
 			bookDAO.editLNBook(book);
-			PrintWriter writer = response.getWriter();
-			writer.write("Edited Light Novel " + book.getID() + " to system");
-			writer.close();
-		} else if(type == 2){
+//			PrintWriter writer = response.getWriter();
+//			writer.write("Edited Light Novel " + book.getID() + " to system");
+//			writer.close();
+		} else if(type.equals("Comics")){
 			int ID = Integer.parseInt(request.getParameter("ID"));
 			String nameSeries = request.getParameter("nameSeries");
 			String artists = request.getParameter("artists");
 			Comics book = new Comics(ISBN, title, summary, years, employee, author, publisher, ID, nameSeries, artists);
 			bookDAO.editCMBook(book);
-			PrintWriter writer = response.getWriter();
-			writer.write("Edited Comic " + book.getID() + " to system");
-			writer.close();
+//			PrintWriter writer = response.getWriter();
+//			writer.write("Edited Comic " + book.getID() + " to system");
+//			writer.close();
 		} else{
 			int ID = Integer.parseInt(request.getParameter("ID"));
 			int numberOfPages = Integer.parseInt(request.getParameter("numberOfPages"));
-			int volume = Integer.parseInt(request.getParameter("volume"));
-			int editions = Integer.parseInt(request.getParameter("editions"));
+			int volume = Integer.parseInt(request.getParameter("volumeTX"));
+			int editions = Integer.parseInt(request.getParameter("editionsTX"));
 			TextBook book = new TextBook(ISBN, title, summary, years, employee, author, publisher, ID, numberOfPages, volume, editions);
 			bookDAO.editTXBook(book);
-			PrintWriter writer = response.getWriter();
-			writer.write("Edited Text Book " + book.getID() + " to system");
-			writer.close();
+//			PrintWriter writer = response.getWriter();
+//			writer.write("Edited Text Book " + book.getID() + " to system");
+//			writer.close();
 		}
 		
 		RequestDispatcher dispatcher = request.getRequestDispatcher("/manage");
@@ -755,11 +776,20 @@ public class userController extends HttpServlet {
 			throws ServletException, IOException{
 		boolean requireLogin = true;
 		int customerID = getcustomerID(request);
-		if (requireLogin && customerID == 1) {
+		if (requireLogin && customerID != 1) {
 			response.sendRedirect("account.html");
 			return;
 		}
-		response.sendRedirect("addbookitemform.jsp");
+		int ISBN = Integer.parseInt(request.getParameter("ISBN"));
+		Bookitem tmp = bookitemDAO.getBookitem(ISBN);
+		if (tmp != null){
+			response.sendRedirect("/Final-Exam/admin");
+		}
+		request.setAttribute("ISBN",  ISBN);
+		request.setAttribute("uploadDate", dateFormat.format(new Date()));
+		RequestDispatcher dispatcher = request.getRequestDispatcher("addbitemform.jsp");
+		dispatcher.forward(request, response);
+//		response.sendRedirect("addbitemform.jsp");
 	}
 	
 	public void uploadBookitem(HttpServletRequest request, HttpServletResponse response)
@@ -782,11 +812,32 @@ public class userController extends HttpServlet {
 		Bookitem bookitem = new Bookitem(1, book, employee, price, discount, uploadDate, inStock);
 		bookitemDAO.addBookitem(bookitem);
 		
-		PrintWriter writer = response.getWriter();
-		writer.write("Add Bookitem " + bookitem.getID() + " to system");
-		writer.close();
+//		PrintWriter writer = response.getWriter();
+//		writer.write("Add Bookitem " + bookitem.getID() + " to system");
+//		writer.close();
 		
 		RequestDispatcher dispatcher = request.getRequestDispatcher("/manage");
+		dispatcher.forward(request, response);
+	}
+	
+	public void editBookitemForm(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException{
+		boolean requireLogin = true;
+		int customerID = getcustomerID(request);
+		if (requireLogin && customerID != 1) {
+			response.sendRedirect("account.html");
+			return;
+		}
+		int ISBN = Integer.parseInt(request.getParameter("ISBN"));
+		Bookitem bookitem = bookitemDAO.getBookitem(ISBN);
+		request.setAttribute("ID", String.valueOf(bookitem.getID()));
+		request.setAttribute("ISBN",  ISBN);
+		request.setAttribute("uploadDate", bookitem.getUploadDate());
+		request.setAttribute("price", String.valueOf(bookitem.getPrice())); //int
+		request.setAttribute("discount", String.valueOf(bookitem.getDiscount())); //int
+		request.setAttribute("inStock", String.valueOf(bookitem.getInStock())); //int
+		
+		RequestDispatcher dispatcher = request.getRequestDispatcher("editbitemform.jsp");
 		dispatcher.forward(request, response);
 	}
 	
@@ -807,13 +858,13 @@ public class userController extends HttpServlet {
 		String uploadDate = request.getParameter("uploadDate");
 		int inStock = Integer.parseInt(request.getParameter("inStock"));
 		float price = Float.parseFloat(request.getParameter("price"));
-		float discount = Float.parseFloat(request.getParameter("price"));
-		Bookitem bookitem = new Bookitem(ID, book, employee, price, discount, uploadDate, inStock);
+		float discount = Float.parseFloat(request.getParameter("discount"));
+//		Bookitem bookitem = new Bookitem(ID, book, employee, price, discount, uploadDate, inStock);
 		bookitemDAO.editBookItem(ID, price, discount, inStock);
 		
-		PrintWriter writer = response.getWriter();
-		writer.write("Edit Bookitem " + bookitem.getID() + " to system");
-		writer.close();
+//		PrintWriter writer = response.getWriter();
+//		writer.write("Edit Bookitem " + bookitem.getID() + " to system");
+//		writer.close();
 		
 		RequestDispatcher dispatcher = request.getRequestDispatcher("/manage");
 		dispatcher.forward(request, response);
@@ -825,21 +876,72 @@ public class userController extends HttpServlet {
 		int customerID = getcustomerID(request);
 		if (requireLogin && customerID != 1) {
 			System.out.print("CC");
-			response.sendRedirect("/home");
+			response.sendRedirect("/Final-Exam/home");
 			return;
 		}
 		List<Comics> comics = bookDAO.findAllComics();
 		List<TextBook> textBook = bookDAO.findAllTextBook();
 		List<LightNovel> lightNovel = bookDAO.findAllLightNovel();
 		List<Customer> customers = customerDAO.findAllCustomers();
+		List<Bookitem> bookitem = bookitemDAO.getAllCMitem();
+		List<Bookitem> bookitemtmp = bookitemDAO.getAllLNitem();
+		List<Bookitem> bookitemtmp2 = bookitemDAO.getAllTXitem();
+		for(Bookitem bitem:bookitemtmp){
+			bookitem.add(bitem);
+		}
+		for(Bookitem bitem:bookitemtmp2){
+			bookitem.add(bitem);
+		}
+//		for(Bookitem bitem:bookitem){
+//			System.out.println(bitem.getBook().getISBN());
+//		}
 		request.setAttribute("listComics", comics);
 		request.setAttribute("listTextBook", textBook);
 		request.setAttribute("listLightNovel", lightNovel);
 		request.setAttribute("customerID", customerID > 0);
 		request.setAttribute("customers", customers);
-//		Comics comic;
-//		comic.get
+		request.setAttribute("bookitem", bookitem);
+//		bookitem.get(0).getBook().get
+//		TextBook txt;
+//		txt.getAuthor().get
 		RequestDispatcher dispatcher = request.getRequestDispatcher("admin-index.jsp");
+		dispatcher.forward(request, response);
+	}
+	
+	public void dellBitemCart(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		boolean requireLogin = true;
+		int customerID = getcustomerID(request);
+		if (requireLogin && customerID <= 0) {
+			response.sendRedirect("account.html");
+			return;
+		}
+		int bookitemID = Integer.parseInt(request.getParameter("bookitemID"));
+		int cartID = cartDAO.getCart(customerID).getID();
+		System.out.println(cartDAO.delCartBitem(bookitemID, cartID));
+		response.sendRedirect("cart");
+//		RequestDispatcher dispatcher = request.getRequestDispatcher("/cart");
+//		dispatcher.forward(request, response);
+	}
+	
+	public void orderLists(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		boolean requireLogin = true;
+		int customerID = getcustomerID(request);
+		if (requireLogin && customerID <= 0) {
+			response.sendRedirect("account.html");
+			return;
+		}
+		List<Order> orders = orderDAO.showAllOrder(customerID);
+//		orders.get(0).getPayment().get
+		while (orders.remove(null));
+		System.out.println(orders.size());
+		request.setAttribute("listOrders", orders);
+		request.setAttribute("customerID", customerID > 0);
+//		bookitem.get(0).getBook().get
+//		TextBook txt;
+//		txt.getAuthor().get
+		RequestDispatcher dispatcher = request.getRequestDispatcher("orderhistory.jsp");
 		dispatcher.forward(request, response);
 	}
 	

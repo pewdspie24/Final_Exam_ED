@@ -31,14 +31,15 @@ public class BookitemDAOImp implements BookitemDAO {
 	private String jdbcUsername = "root";
 	private String jdbcPassword = "123456";
 	
-	private static final String INSERT_NEW_BITEM = "insert into bookitem " + "(EmployeeID, BookID, Price, Discount, UploadDate, Instock) values "+" (?, ?, ?, ?, ?, ?);";
-	private static final String SELECT_ALL_CMITEM_ID = "SELECT * FROM bookitem WHERE BookID IN (SELECT ID FROM book WHERE IDCom is NOT NULL); ";
-    private static final String SELECT_ALL_TXITEM_ID = "SELECT * FROM bookitem WHERE BookID IN (SELECT ID FROM book WHERE IDText is NOT NULL); ";
-    private static final String SELECT_ALL_LNITEM_ID = "SELECT * FROM bookitem WHERE BookID IN (SELECT ID FROM book WHERE IDLN is NOT NULL); ";
+	private static final String INSERT_NEW_BITEM = "insert into bookitem " + "(EmployeeID, Price, Discount, UploadDate, Instock, BookID) values "+" (?, ?, ?, ?, ?, ?);";
+	private static final String SELECT_ALL_CMITEM_ID = "SELECT * FROM bookitem WHERE BookID IN (SELECT ISBN FROM book WHERE IDCom is NOT NULL); ";
+    private static final String SELECT_ALL_TXITEM_ID = "SELECT * FROM bookitem WHERE BookID IN (SELECT ISBN FROM book WHERE IDText is NOT NULL); ";
+    private static final String SELECT_ALL_LNITEM_ID = "SELECT * FROM bookitem WHERE BookID IN (SELECT ISBN FROM book WHERE IDLN is NOT NULL); ";
     private static final String UPDATE_BITEM_BY_ID = "UPDATE bookitem SET Price = ?, Discount = ?, instock= ? WHERE ID = ?;";
     private static final String SUBTRACT_BITEM_BY_ID = "UPDATE bookitem SET instock= ? WHERE ID = ?;";
-    private static final String SELECT_BITEM_BY_ID = "select * from bookitem where id =?;";
-    private static final String SELECT_BOOK_BY_ID = "select * from book where id =?;";
+    private static final String SELECT_BITEM_BY_ID = "select * from bookitem where bookid =?;";
+    private static final String SELECT_BITEM_BY_ID2 = "select * from bookitem where id =?;";
+    private static final String SELECT_BOOK_BY_ID = "select * from book where ISBN =?;";
     private static final String SELECT_NUM_BY_ID = "select instock from bookitem where ID = ?";
     private static final String DELETE_BITEM = "delete from bookitem where id = ?;";
     private static final String SELECT_PUB_BY_ID = "select * from publisher where id =?";
@@ -448,7 +449,7 @@ public class BookitemDAOImp implements BookitemDAO {
 	
 	public void addBookitem(Bookitem book) {
 		try (Connection connection = getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(INSERT_NEW_BITEM)) {
-        	preparedStatement.setInt(1, book.getID());
+        	preparedStatement.setInt(1, book.getEmployee().getID());
         	preparedStatement.setFloat(2, book.getPrice());
             preparedStatement.setFloat(3, book.getDiscount());
             preparedStatement.setString(4, book.getUploadDate());
@@ -605,6 +606,7 @@ public class BookitemDAOImp implements BookitemDAO {
 
             // Step 4: Process the ResultSet object.
             while (rs.next()) {
+            	int id = rs.getInt("ID");
             	int employeeID = rs.getInt("employeeID");
             	Employee employee = getEmployee(employeeID);
                 int bookID = rs.getInt("bookID");
@@ -613,7 +615,38 @@ public class BookitemDAOImp implements BookitemDAO {
                 float price = rs.getFloat("price");
                 float discount = rs.getFloat("discount");
                 String uploadDate = rs.getString("uploadDate");
-                bookitem = new Bookitem(ID, book, employee, price, discount, uploadDate, inStock);
+                bookitem = new Bookitem(id, book, employee, price, discount, uploadDate, inStock);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return bookitem;
+	}
+	
+	public Bookitem getBookitemByID(int ID){
+		Bookitem bookitem = null;
+        // Step 1: Establishing a Connection
+        try (Connection connection = getConnection();
+
+                // Step 2:Create a statement using connection object
+                PreparedStatement preparedStatement = connection.prepareStatement(SELECT_BITEM_BY_ID2);) {
+            preparedStatement.setInt(1, ID);
+            System.out.println(preparedStatement);
+            // Step 3: Execute the query or update query
+            ResultSet rs = preparedStatement.executeQuery();
+
+            // Step 4: Process the ResultSet object.
+            while (rs.next()) {
+            	int id = rs.getInt("ID");
+            	int employeeID = rs.getInt("employeeID");
+            	Employee employee = getEmployee(employeeID);
+                int bookID = rs.getInt("bookID");
+				Book book = getBookByID(bookID);
+				int inStock = rs.getInt("inStock");
+                float price = rs.getFloat("price");
+                float discount = rs.getFloat("discount");
+                String uploadDate = rs.getString("uploadDate");
+                bookitem = new Bookitem(id, book, employee, price, discount, uploadDate, inStock);
             }
         } catch (SQLException e) {
             e.printStackTrace();

@@ -41,6 +41,7 @@ public class CartDAOImp implements CartDAO {
 	private static final String SELECT_NAME_BY_ID = "SELECT * from fullname where id = ?;";
 	private static final String SELECT_BIRTH_BY_ID = "SELECT * from birth where id = ?;";
 	private static final String SELECT_PHONE_BY_ID = "SELECT * from phone where id = ?;";
+	private static final String DELETE_BITEM = "delete from bookitem_cart where Bookitemid = ? and CartId = ?;";
     
     protected Connection getConnection() {
         Connection connection = null;
@@ -416,4 +417,16 @@ public class CartDAOImp implements CartDAO {
         return cart;
 	}
 	
+	public boolean delCartBitem(int bookitemID, int cartID) {
+		boolean rowDeleted = false;
+        try (Connection connection = getConnection(); PreparedStatement statement = connection.prepareStatement(DELETE_BITEM);) {
+            statement.setInt(1, bookitemID);
+            statement.setInt(2, cartID);
+            rowDeleted = statement.executeUpdate() > 0;
+        } catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        return rowDeleted;
+	}
 }

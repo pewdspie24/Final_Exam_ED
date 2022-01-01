@@ -24,8 +24,8 @@
             <nav>
                 <ul id="MenuItems">
                     <li><a href="home">Home</a></li>
-                    <li><a href="products.html">Products</a></li>
-                    <li><a href="">About</a></li>
+                    <li><a href="admin">Admin Site</a></li>
+                    <li><a href="orderlists">Order Histories</a></li>
                     <li><a href="">Contact</a></li>
                     <li><a href="account.html">Account</a></li>
                 </ul>
@@ -83,7 +83,7 @@
                 <h2>Select payment</h2>
                 <select name="payment">
                 	 <c:forEach var="pay" items="${payments}">
-				        <option value="${pay.id}">${pay.id}, <td>${pay.names}</td></option>
+				        <option value="${pay.ID}">${pay.ID}, <td>${pay.names}</td></option>
 				    </c:forEach>
                 </select>
             </div>
@@ -91,7 +91,7 @@
                 <h2>Select shipment</h2>
                 <select name="shipment">
 	                <c:forEach var="ship" items="${shipments}">
-				        <option value="${ship.id}">${ship.id}, <td>${ship.names}</td></option>
+				        <option value="${ship.ID}">${ship.ID}, <td>${ship.names}</td></option>
 				    </c:forEach>
                 </select>
             </div>
@@ -99,7 +99,7 @@
                 <h2>Select voucher</h2>
                 <select name="voucher">
                     <c:forEach var="vou" items="${vouchers}">
-				        <option value="${vou.id}">${vou.id}, <td>${vou.names}</td></option>
+				        <option value="${vou.ID}">${vou.ID}, <td>${vou.names}</td></option>
 				    </c:forEach>
                 </select>
             </div>
